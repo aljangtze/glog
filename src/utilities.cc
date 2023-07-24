@@ -302,6 +302,29 @@ pid_t GetTID() {
 #endif
 }
 
+static int32 g_main_day = 0;
+int32 GetMainDay()
+{
+    return g_main_day;
+}
+
+bool DayHasChanged()
+{
+    time_t raw_time;
+    struct tm* tm_info;
+
+    time(&raw_time);
+    tm_info = localtime(&raw_time);
+
+    if (tm_info->tm_mday != g_main_day)
+    {
+        g_main_day = tm_info->tm_mday;
+        return true;
+    }
+
+    return false;
+}
+
 const char* const_basename(const char* filepath) {
   const char* base = strrchr(filepath, '/');
 #ifdef GLOG_OS_WINDOWS  // Look for either path separator in Windows

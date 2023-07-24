@@ -154,6 +154,9 @@ bool PidHasChanged();
 
 pid_t GetTID();
 
+int32 GetMainDay();
+bool DayHasChanged();
+
 const std::string& MyUserName();
 
 // Get the part of filepath after the last path separator.

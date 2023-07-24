@@ -1054,10 +1054,10 @@ bool LogFileObject::CreateLogfile(const string& time_pid_string) {
   string_filename += filename_extension_;
   const char* filename = string_filename.c_str();
   //only write to files, create if non-existant.
-  int flags = O_WRONLY | O_CREAT;
+  int flags = O_WRONLY | O_CREAT | O_APPEND;
   if (FLAGS_timestamp_in_logfile_name) {
     //demand that the file is unique for our timestamp (fail if it exists).
-    flags = flags | O_EXCL;
+    flags = flags/* | O_EXCL*/;
   }
   int fd = open(filename, flags, static_cast<mode_t>(FLAGS_logfile_mode));
   if (fd == -1) return false;
@@ -1159,7 +1159,7 @@ void LogFileObject::Write(bool force_flush,
     return;
   }
 
-  if (file_length_ >> 20U >= MaxLogSize() || PidHasChanged()) {
+  if (file_length_ >> 20U >= MaxLogSize() || DayHasChanged()/*|| PidHasChanged()*/) {
     if (file_ != nullptr) fclose(file_);
     file_ = nullptr;
     file_length_ = bytes_since_flush_ = dropped_mem_length_ = 0;
@@ -1184,15 +1184,15 @@ void LogFileObject::Write(bool force_flush,
     // The logfile's filename will have the date/time & pid in it
     ostringstream time_pid_stream;
     time_pid_stream.fill('0');
-    time_pid_stream << 1900+tm_time.tm_year
-                    << setw(2) << 1+tm_time.tm_mon
-                    << setw(2) << tm_time.tm_mday
-                    << '-'
-                    << setw(2) << tm_time.tm_hour
-                    << setw(2) << tm_time.tm_min
-                    << setw(2) << tm_time.tm_sec
-                    << '.'
-                    << GetMainThreadPid();
+    time_pid_stream << 1900 + tm_time.tm_year
+        << setw(2) << 1 + tm_time.tm_mon
+        << setw(2) << tm_time.tm_mday
+        << '-'
+        << setw(2) << tm_time.tm_hour;
+                    //<< setw(2) << tm_time.tm_min
+                    //<< setw(2) << tm_time.tm_sec
+                    //<< '.'
+                    //<< GetMainThreadPid();
     const string& time_pid_string = time_pid_stream.str();
 
     if (base_filename_selected_) {
